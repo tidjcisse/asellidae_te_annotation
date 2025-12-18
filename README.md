@@ -88,12 +88,12 @@ set -euo pipefail
 
 #======================= VARIABLES =======================
 
-DFAM="dfam/"
 WORKDIR="/chemin/absolu/de/annotation"
+DFAM="${WORKDIR}/dfam/"
 ASSEMBLY="assembly.fasta"     # doit être dans $WORKDIR
 DBNAME="CODE"
 TE_LIB="$DBNAME-families.fa"
-PFAM_DIR="pfam_db/"
+PFAM_DIR="${WORKDIR}/pfam_db/"
 THREADS=32
 
 DOCKER_USER="--user $(id -u):$(id -g)"
