@@ -4,13 +4,9 @@
 
 1. [Introduction](README.md#Introduction)
 2. [Installation](README.md#Installation)
-3. [Usage](README.md#Usage)    
-    - [Inputs](README.md#Inputs)  
-    - [Outputs](README.md#Outputs)  
-4.  [Pipeline Overview](README.md#Pipeline-Overview) 
-5.  [All Commands](README.md#All-Commands)  
-6. [Update History](README.md#Update-History)
-
+3. [Exécution de RepeatModeler2 + TEtrimmer (Docker)](README.md#Usage)       
+4. [Outputs](README.md#Outputs)
+5.  [Schéma du Pipeline](README.md#Pipeline-Overview)
 
 ## Introduction
 
@@ -18,7 +14,10 @@ Dans le cadre de mon stage de M2 intitulé **"Influence du régime alimentaire s
 
 Ce pipeline nommé **Asellidae_TE_Annotation** automatise la détection *de-novo*, la curation et le masquage des TE, produisant une bibliothèque de consensus de qualité avec une curation-manuelle pour chaque assembly des Asellidae. Il inclut **RepeatModeler2, TEtrimmer** et **RepeatMasker**.
 
-## exécution de RepeatModeler2 (Docker)
+## Installation et configuration
+
+Cette section décrit l’installation des bases de données nécessaires au pipeline.
+L’exécution complète du pipeline est décrite dans la section suivante.
 
 - Requirements
 
@@ -28,30 +27,73 @@ Ce pipeline nommé **Asellidae_TE_Annotation** automatise la détection *de-novo
 docker --version
 ```
 
-> Télécharger dfam
+> Créer un dossier annotation
+```bash
+mkdir -p annotation
+cd annotation
+```
+
+> Installation de **dfam** dans le dossier précédamment crée: annotation
+
+La base Dfam est utilisée par RepeatModeler2 et RepeatMasker pour la classification des éléments transposables.
+**La base Dfam doit se trouver dans annotation/dfam/**
 
 ```bash
 mkdir -p dfam
-wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.0.h5.gz
 cd dfam
+wget https://www.dfam.org/releases/current/families/FamDB/dfam39_full.0.h5.gz
 gunzip dfam39_full.0.h5.gz
 cd ..
 ```
+> Installation de pfam dans le dossier précédamment crée: annotation
 
-> Préparer l’environnement RepeatModeler2 (Docker)
+La base Pfam est requise par TEtrimmer pour l’identification des domaines protéiques et la détermination de l’orientation des éléments transposables.
+**La base pfam doit se trouver dans annotation/pfam_db/**
 
-Le pipeline utilise l’image Docker dfam/tetools, qui inclut RepeatModeler2, RepeatMasker et toutes leurs dépendances.
 
-Copier-coller le script suivant dans un fichier **script_repeatModeler2.sh**
+```bash
+mkdir -p pfam_db
+cd pfam_db
+wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
+gunzip Pfam-A.hmm.gz
+gunzip Pfam-A.hmm.dat.gz
+cd ..
+```
+
+## Exécution de RepeatModeler2 + TEtrimmer (Docker)
+
+Cette étape exécute successivement :
+
+1. la construction de la base génomique (BuildDatabase)
+
+2. la détection de novo des TE avec RepeatModeler2
+
+3. la curation automatisée des consensus TE avec TEtrimmer
+
+L’ensemble est exécuté via des conteneurs Docker afin de garantir la reproductibilité et d’éviter les conflits de dépendances.
+
+> Copier-coller le script suivant dans un fichier **Asellidea_TE_annot.sh**
+
+**Remarque importante sur les chemins !** :
+
+> - `WORKDIR` doit être un chemin absolu  
+> - `DFAM` et `PFAM_DIR` sont définis relativement au dossier `annotation`  
+> - le fichier `ASSEMBLY` doit être présent dans `WORKDIR`
+
 
 ```bash
 #!/bin/bash
 set -euo pipefail
 
-DFAM="/chemin/absolu/de/dfam"
-WORKDIR="/chemin/absolu/de/RepeatModeler2"
+#======================= VARIABLES =======================
+
+DFAM="dfam/"
+WORKDIR="/chemin/absolu/de/annotation"
 ASSEMBLY="assembly.fasta"     # doit être dans $WORKDIR
 DBNAME="CODE"
+TE_LIB="$DBNAME-families.fa"
+PFAM_DIR="pfam_db/"
 THREADS=32
 
 DOCKER_USER="--user $(id -u):$(id -g)"
@@ -59,11 +101,13 @@ DOCKER_USER="--user $(id -u):$(id -g)"
 mkdir -p "$WORKDIR"
 cd "$WORKDIR"
 
-# Vérifications
+#======================= VERIFICATIONS =======================
+
 [[ -f "$ASSEMBLY" ]] || { echo "Erreur : assembly introuvable : $WORKDIR/$ASSEMBLY"; exit 1; }
 [[ -f "$DFAM/dfam39_full.0.h5" ]] || { echo "Erreur : Dfam introuvable : $DFAM/dfam39_full.0.h5"; exit 1; }
 
-# BuildDatabase
+#======================= BUILDDATABASE =======================
+
 docker run --rm \
   $DOCKER_USER \
   -v "$WORKDIR:/work" \
@@ -72,7 +116,8 @@ docker run --rm \
   dfam/tetools:latest \
   BuildDatabase -name "${DBNAME}" "/work/${ASSEMBLY}"
 
-# RepeatModeler
+#======================= Step2: REPEATMODELER2 =======================
+
 docker run --rm \
   $DOCKER_USER \
   -v "$WORKDIR:/work" \
@@ -82,22 +127,72 @@ docker run --rm \
   RepeatModeler -database "${DBNAME}" -threads "${THREADS}" \
   &> "repeatmodeler_${DBNAME}.log"
 
-```
-Pensez à bien utiliser les chemins absolus correspondants
+#======================= Step3: TETRIMMER =======================
 
-> DFAM="/chemin/absolu/de/dfam"
-WORKDIR="/chemin/absolu/de/RepeatModeler2"
-ASSEMBLY="assembly.fasta"
+OUTDIR="$DBNAME-tetrimmer_out"
+LOG="$DBNAME-tetrimmer.log"
+IMG="quay.io/biocontainers/tetrimmer:1.5.4--hdfd78af_0"
+
+# Checks
+[[ -f "$TE_LIB" ]] || { echo "Erreur: TE lib introuvable: $TE_LIB"; exit 1; }
+[[ -d "$PFAM_DIR" ]] || { echo "Erreur: pfam_dir introuvable: $PFAM_DIR"; exit 1; }
+
+mkdir -p "$OUTDIR"
+
+docker run --rm \
+  $DOCKER_USER \
+  -e MPLCONFIGDIR=/tmp \
+  -e XDG_CACHE_HOME=/tmp \
+  -v "$PWD:/data" \
+  -w /data \
+  "$IMG" \
+  TEtrimmer \
+    --input_file "/data/${TE_LIB}" \
+    --genome_file "/data/${ASSEMBLY}" \
+    --output_dir "/data/${OUTDIR}" \
+    --pfam_dir "/data/${PFAM_DIR}" \
+    --num_threads "${THREADS}" \
+    --classify_all \
+    --hmm \
+    --genome_anno \
+  &> "$LOG"
+
+
+# Optionnel mais pratique: rendre les sorties manipulables sans sudo
+sudo chown -R "$(id -u):$(id -g)" "$OUTDIR" || true
+
+echo "TEtrimmer terminé. Log: $LOG"
+echo "Pipeline terminé pour ${DBNAME}."
+echo "Bibliothèque TE finale : ${OUTDIR}/TEtrimmer_consensus_merged.fasta"
+
+```
+
 
 Rendre exécutable et lancer le script
 
 ```bash
-chmod +x script_repeatModeler2.sh
-./script_repeatModeler2.sh
+chmod +x Asellidea_TE_annot.sh
+./Asellidea_TE_annot.sh
 ```
+## Outputs
 
-## Utilisation
+Le pipeline génère les sorties principales suivantes :
+
+### RepeatModeler2
+- `${DBNAME}-families.fa` : bibliothèque de consensus TE *de novo*
+- `${DBNAME}-families.stk` : alignements multiples associés
+- `repeatmodeler_${DBNAME}.log` : log d’exécution
+
+### TEtrimmer
+- `${OUTDIR}/TEtrimmer_consensus.fasta` : consensus TE avant dé-duplication
+- `${OUTDIR}/TEtrimmer_consensus_merged.fasta` : **bibliothèque finale curée**
+- `${OUTDIR}/summary.txt` : résumé de la curation
+- `${OUTDIR}/HMM_files/` : profils HMM (option `--hmm`)
+- `${OUTDIR}/RepeatMasker_result/` : annotation du génome par RepeatMasker via TEtrimmer (option `--genome_anno`)
+- `${OUTDIR}/TEtrimmer_for_proof_curation/` : figures PDF pour validation manuelle
+
 
 ## Schéma du Pipeline
 
-## Commandes
+RepeatModeler2 → TEtrimmer → RepeatMasker
+
