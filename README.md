@@ -2,11 +2,11 @@
 
 ## Contenus
 
-1. [Introduction](README.md#Introduction)
-2. [Installation](README.md#Installation)
-3. [Exécution de RepeatModeler2 + TEtrimmer (Docker)](README.md#Usage)       
-4. [Outputs](README.md#Outputs)
-5.  [Schéma du Pipeline](README.md#Pipeline-Overview)
+1. [Introduction](#introduction)
+2. [Installation et configuration](#installation-et-configuration)
+3. [Exécution de RepeatModeler2 + TEtrimmer (Docker)](#exécution-de-repeatmodeler2--tetrimmer-docker)
+4. [Outputs](#outputs)
+5. [Schéma du Pipeline](#schéma-du-pipeline)
 
 ## Introduction
 
