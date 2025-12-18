@@ -27,7 +27,7 @@ L’exécution complète du pipeline est décrite dans la section suivante.
 docker --version
 ```
 
-> Créer un dossier annotation
+> Créer un dossier  nommé annotation et télécharger le génome test
 ```bash
 mkdir -p annotation
 cd annotation
