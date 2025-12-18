@@ -31,6 +31,7 @@ docker --version
 ```bash
 mkdir -p annotation
 cd annotation
+wget http://pedago-service.univ-lyon1.fr:2325/tfoussenisalamicisse/asellidae_te_annotation/-/blob/main/test_200contigs.fasta
 ```
 
 > Installation de **dfam** dans le dossier précédamment crée: annotation
