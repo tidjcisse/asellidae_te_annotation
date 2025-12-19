@@ -6,10 +6,10 @@ WORKDIR="$ROOT_DIR/annotation"
 
 mkdir -p $WORKDIR/assemblies "$WORKDIR/dfam" "$WORKDIR/pfam_db" "$WORKDIR/results"
 
-# Check Docker
+#=================== Check Docker ================
 docker --version >/dev/null
 
-# Dfam
+#====================== Dfam ====================
 if [[ ! -f "$WORKDIR/dfam/dfam39_full.0.h5" ]]; then
   echo "==> Téléchargement Dfam..."
   wget -O "$WORKDIR/dfam/dfam39_full.0.h5.gz" \
@@ -19,7 +19,8 @@ else
   echo "==> Dfam déjà présent."
 fi
 
-# Pfam
+#====================== Pfam =====================
+
 if [[ ! -f "$WORKDIR/pfam_db/Pfam-A.hmm" ]]; then
   echo "==> Téléchargement Pfam..."
   wget -O "$WORKDIR/pfam_db/Pfam-A.hmm.gz" \
@@ -28,11 +29,18 @@ if [[ ! -f "$WORKDIR/pfam_db/Pfam-A.hmm" ]]; then
     https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
   gunzip "$WORKDIR/pfam_db/Pfam-A.hmm.gz"
   gunzip "$WORKDIR/pfam_db/Pfam-A.hmm.dat.gz"
-  hmmpress Pfam-A.hmm
 else
   echo "==> Pfam déjà présent."
-  hmmpress Pfam-A.hmm
 fi
+
+# Index Pfam (obligatoire pour TEtrimmer)
+if [[ ! -f "$WORKDIR/pfam_db/Pfam-A.hmm.h3m" ]]; then
+  echo "==> Indexation Pfam (hmmpress)..."
+  hmmpress "$WORKDIR/pfam_db/Pfam-A.hmm"
+else
+  echo "==> Pfam déjà indexé."
+fi
+
 
 echo "✅ Setup terminé."
 echo "➡️ Place ton génome FASTA dans: $WORKDIR/assemblies/"
