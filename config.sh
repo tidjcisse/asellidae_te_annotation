@@ -28,8 +28,10 @@ if [[ ! -f "$WORKDIR/pfam_db/Pfam-A.hmm" ]]; then
     https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
   gunzip "$WORKDIR/pfam_db/Pfam-A.hmm.gz"
   gunzip "$WORKDIR/pfam_db/Pfam-A.hmm.dat.gz"
+  hmmpress Pfam-A.hmm
 else
   echo "==> Pfam déjà présent."
+  hmmpress Pfam-A.hmm
 fi
 
 echo "✅ Setup terminé."
