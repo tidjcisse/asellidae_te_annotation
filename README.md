@@ -14,7 +14,18 @@ Dans le cadre de mon stage de M2 intitulé **"Influence du régime alimentaire s
 
 Ce pipeline nommé **Asellidae_TE_Annotation** automatise la détection *de-novo*, la curation et le masquage des TE, produisant une bibliothèque de consensus de qualité avec une curation-manuelle pour chaque assembly des Asellidae. Il inclut **RepeatModeler2, TEtrimmer** et **RepeatMasker**.
 
+## Quick start
+
+```bash
+git clone http://pedago-service.univ-lyon1.fr:2325/tfoussenisalamicisse/asellidae_te_annotation.git
+cd Asellidae_TE_Annotation
+chmod +x setup.sh run.sh Asellidea_TE_annot.sh
+./config.sh
+```
+Après exécution de ces lignes de commandes vous obtenez la structure suivante.
+
 ## Structure du dépôt (après clonage)
+
 
 ```bash
 asellidae_te_annotation/
