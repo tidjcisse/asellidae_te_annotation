@@ -14,10 +14,43 @@ Dans le cadre de mon stage de M2 intitulé **"Influence du régime alimentaire s
 
 Ce pipeline nommé **Asellidae_TE_Annotation** automatise la détection *de-novo*, la curation et le masquage des TE, produisant une bibliothèque de consensus de qualité avec une curation-manuelle pour chaque assembly des Asellidae. Il inclut **RepeatModeler2, TEtrimmer** et **RepeatMasker**.
 
+## Structure du dépôt (après clonage)
+
+asellidae_te_annotation/
+├── README.md
+├── run_pipeline.sh        # script principal à lancer
+├── pipeline.sh            # logique interne
+├── config.sh              # paramètres utilisateur
+├── logs/                  # logs globaux
+│   ├── run_pipeline.log
+│   ├── repeatmodeler_CODE.log
+│   └── tetrimmer_CODE.log
+└── annotation/
+    ├── assemblies/        # génomes à annoter
+    │   └── test_200contigs.fasta
+    ├── dfam/              # base Dfam
+    │   └── dfam39_full.0.h5
+    ├── pfam_db/           # base Pfam
+    │   ├── Pfam-A.hmm
+    │   └── Pfam-A.hmm.dat
+    └── results/
+        └── CODE/
+            ├── repeatmodeler/
+            ├── tetrimmer/
+            └── repeatmasker/
+
+
+
 ## Installation et configuration
 
 Cette section décrit l’installation des bases de données nécessaires au pipeline.
 L’exécution complète du pipeline est décrite dans la section suivante.
+
+### Version simple
+
+Aucune connaissance en Bash requise
+
+### Version pour Bioinformaticien
 
 - Requirements
 
