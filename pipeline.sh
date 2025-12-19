@@ -56,6 +56,9 @@ IMG="quay.io/biocontainers/tetrimmer:1.5.4--hdfd78af_0"
 [[ -f "$TE_LIB" ]] || { echo "Erreur: TE lib introuvable (RepeatModeler n'a pas produit $TE_LIB)"; exit 1; }
 mkdir -p "$OUTDIR"
 
+GENOME_LOCAL="genome_${DBNAME}.fasta"
+cp -f "$ASSEMBLY_PATH" "$RESULTS_DIR/$DBNAME/$GENOME_LOCAL"
+
 docker run --rm \
   $DOCKER_USER \
   -e MPLCONFIGDIR=/tmp \
@@ -67,7 +70,7 @@ docker run --rm \
   "$IMG" \
   TEtrimmer \
     --input_file "/data/${DBNAME}-families.fa" \
-    --genome_file "/assemblies/${ASSEMBLY}" \
+    --genome_file "/data/${GENOME_LOCAL}" \
     --output_dir "/data/${OUTDIR}" \
     --pfam_dir "/pfam" \
     --num_threads "${THREADS}" \
