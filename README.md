@@ -16,21 +16,22 @@ Ce pipeline nommé **Asellidae_TE_Annotation** automatise la détection *de-novo
 
 ## Structure du dépôt (après clonage)
 
+```bash
 asellidae_te_annotation/
 ├── README.md
 ├── run_pipeline.sh        # script principal à lancer
 ├── pipeline.sh            # logique interne
 ├── config.sh              # paramètres utilisateur
-├── logs/                  # logs globaux
+├── logs/
 │   ├── run_pipeline.log
 │   ├── repeatmodeler_CODE.log
 │   └── tetrimmer_CODE.log
 └── annotation/
-    ├── assemblies/        # génomes à annoter
+    ├── assemblies/
     │   └── test_200contigs.fasta
-    ├── dfam/              # base Dfam
+    ├── dfam/
     │   └── dfam39_full.0.h5
-    ├── pfam_db/           # base Pfam
+    ├── pfam_db/
     │   ├── Pfam-A.hmm
     │   └── Pfam-A.hmm.dat
     └── results/
@@ -39,7 +40,7 @@ asellidae_te_annotation/
             ├── tetrimmer/
             └── repeatmasker/
 
-
+```
 
 ## Installation et configuration
 
