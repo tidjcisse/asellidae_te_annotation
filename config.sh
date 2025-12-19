@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 WORKDIR="$ROOT_DIR/annotation"
 
-mkdir -p "$WORKDIR/dfam" "$WORKDIR/pfam_db" "$WORKDIR/results"
+mkdir -p $WORKDIR/assemblies "$WORKDIR/dfam" "$WORKDIR/pfam_db" "$WORKDIR/results"
 
 # Check Docker
 docker --version >/dev/null
