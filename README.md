@@ -3,10 +3,12 @@
 ## Contenus
 
 1. [Introduction](#introduction)
-2. [Installation et configuration](#installation-et-configuration)
-3. [Exécution de RepeatModeler2 + TEtrimmer (Docker)](#exécution-de-repeatmodeler2--tetrimmer-docker)
-4. [Outputs](#outputs)
-5. [Schéma du Pipeline](#schéma-du-pipeline)
+2. [Mode automatisé](#mode automatisé)
+3. [Mode manuelle](#mode manuel)
+    - [Installation et configuration](#Installation et configuration)
+    - [Exécution de RepeatModeler2 + TEtrimmer (Docker)](#)
+    - [Outputs](#outputs)
+4. [Schéma du Pipeline](#schéma-du-pipeline)
 
 ## Introduction
 
@@ -14,55 +16,59 @@ Dans le cadre de mon stage de M2 intitulé **"Influence du régime alimentaire s
 
 Ce pipeline nommé **Asellidae_TE_Annotation** automatise la détection *de-novo*, la curation et le masquage des TE, produisant une bibliothèque de consensus de qualité avec une curation-manuelle pour chaque assembly des Asellidae. Il inclut **RepeatModeler2, TEtrimmer** et **RepeatMasker**.
 
-## Quick start
+## Mode automatisé
 
 ```bash
 git clone http://pedago-service.univ-lyon1.fr:2325/tfoussenisalamicisse/asellidae_te_annotation.git
 cd Asellidae_TE_Annotation
-chmod +x setup.sh run.sh Asellidea_TE_annot.sh
+chmod +x config.sh Asellidea_TE_annot.sh run_pipeline.sh
 ./config.sh
 ```
 Après exécution de ces lignes de commandes vous obtenez la structure suivante.
 
-## Structure du dépôt (après clonage)
-
+### Structure du dépôt (après clonage)
+```bash
+.
+├── .gitignore
+├── .gitlab-ci.yml
+├── README.md
+├── annotation
+│   ├── assemblies -----→ déposer ici les génomes FASTA
+│   │   
+│   │   
+│   ├── dfam -----→ la base de données dfam pour RM2
+│   │   └── dfam39_full.0.h5
+│   ├── pfam_db -----→ la base de données pfam pour TEtrimmer
+│   │   ├── Pfam-A.hmm
+│   │   ├── Pfam-A.hmm.dat
+│   │   ├── Pfam-A.hmm.h3f
+│   │   ├── Pfam-A.hmm.h3i
+│   │   ├── Pfam-A.hmm.h3m
+│   │   └── Pfam-A.hmm.h3p
+│   └── results ----→ résultats générés automatiquement
+│       
+│       
+├── config.sh
+├── Asellidea_TE_annot.sh ----→ logique interne (ne pas modifier)
+└── run_pipeline.sh
+```
+Pour vérifier la structure, exécutez la ligne de commande
 
 ```bash
-asellidae_te_annotation/
-├── README.md
-├── run_pipeline.sh        # script principal à lancer
-├── pipeline.sh            # logique interne
-├── config.sh              # paramètres utilisateur
-├── logs/
-│   ├── run_pipeline.log
-│   ├── repeatmodeler_CODE.log
-│   └── tetrimmer_CODE.log
-└── annotation/
-    ├── assemblies/
-    │   └── test_200contigs.fasta
-    ├── dfam/
-    │   └── dfam39_full.0.h5
-    ├── pfam_db/
-    │   ├── Pfam-A.hmm
-    │   └── Pfam-A.hmm.dat
-    └── results/
-        └── CODE/
-            ├── repeatmodeler/
-            ├── tetrimmer/
-            └── repeatmasker/
-
+tree -a -I '.git|__pycache__' -L 3
+```
+Ensuite copiez les assemblages dans le sous dossier **annotation/assemblies** et lancez run_pipeline.
+```bash
+./run_pipeline
 ```
 
-## Installation et configuration
+## Mode manuel (niveau minimum en bash)
+
+### Installation et configuration
 
 Cette section décrit l’installation des bases de données nécessaires au pipeline.
 L’exécution complète du pipeline est décrite dans la section suivante.
 
-### Version simple
-
-Aucune connaissance en Bash requise
-
-### Version pour Bioinformaticien
 
 - Requirements
 
@@ -106,7 +112,7 @@ gunzip Pfam-A.hmm.dat.gz
 cd ..
 ```
 
-## Exécution de RepeatModeler2 + TEtrimmer (Docker)
+### Exécution de RepeatModeler2 + TEtrimmer (Docker)
 
 Cette étape exécute successivement :
 
@@ -219,25 +225,36 @@ Rendre exécutable et lancer le script
 chmod +x Asellidea_TE_annot.sh
 ./Asellidea_TE_annot.sh
 ```
-## Outputs
+### Outputs
 
 Le pipeline génère les sorties principales suivantes :
 
-### RepeatModeler2
-- `${DBNAME}-families.fa` : bibliothèque de consensus TE *de novo*
-- `${DBNAME}-families.stk` : alignements multiples associés
-- `repeatmodeler_${DBNAME}.log` : log d’exécution
+#### RepeatModeler2
+  - `${DBNAME}-families.fa` : bibliothèque de consensus TE *de novo*
+  - `${DBNAME}-families.stk` : alignements multiples associés
+  - `repeatmodeler_${DBNAME}.log` : log d’exécution
 
-### TEtrimmer
-- `${OUTDIR}/TEtrimmer_consensus.fasta` : consensus TE avant dé-duplication
-- `${OUTDIR}/TEtrimmer_consensus_merged.fasta` : **bibliothèque finale curée**
-- `${OUTDIR}/summary.txt` : résumé de la curation
-- `${OUTDIR}/HMM_files/` : profils HMM (option `--hmm`)
-- `${OUTDIR}/RepeatMasker_result/` : annotation du génome par RepeatMasker via TEtrimmer (option `--genome_anno`)
-- `${OUTDIR}/TEtrimmer_for_proof_curation/` : figures PDF pour validation manuelle
+#### TEtrimmer
+  - `${OUTDIR}/TEtrimmer_consensus.fasta` : consensus TE avant dé-duplication
+    Le fichier principal à utiliser pour l’annotation du génome est
+  - `${OUTDIR}/TEtrimmer_consensus_merged.fasta` : **bibliothèque finale curée**
+  - `${OUTDIR}/summary.txt` : résumé de la curation
+  - `${OUTDIR}/HMM_files/` : profils HMM (option `--hmm`)
+  - `${OUTDIR}/RepeatMasker_result/` : annotation du génome par RepeatMasker via TEtrimmer (option `--genome_anno`)
+  - `${OUTDIR}/TEtrimmer_for_proof_curation/` : figures PDF pour validation manuelle
 
 
 ## Schéma du Pipeline
 
-RepeatModeler2 → TEtrimmer → RepeatMasker
+      Assemblies (fasta)
+                  │
+                  ▼
+      RepeatModeler2 (de novo TE discovery)
+                  │
+                  ▼
+      TEtrimmer (curation + classification)
+                  │
+                  ▼
+      RepeatMasker (annotation génomique)
+
 
