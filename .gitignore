@@ -1,0 +1,32 @@
+# =========================
+# Annotation data (runtime)
+# =========================
+
+annotation/dfam/
+annotation/pfam_db/
+annotation/results/
+
+# Ignore user genomes
+annotation/assemblies/*.fa
+annotation/assemblies/*.fasta
+
+# Keep the test assembly
+!annotation/assemblies/test_assembly.fasta
+
+# =========================
+# Logs & temp
+# =========================
+
+*.log
+*.tmp
+*.err
+
+# =========================
+# OS / editor noise
+# =========================
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
