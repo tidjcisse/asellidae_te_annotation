@@ -24,5 +24,5 @@ read -rp "Threads (défaut: 32): " THREADS
 THREADS="${THREADS:-32}"
 
 export ASSEMBLY DBNAME THREADS
-bash "$ROOT_DIR/pipeline.sh"
+bash "$ROOT_DIR/Asellidea_TE_annot.sh"
 
