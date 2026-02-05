@@ -23,6 +23,11 @@ git clone http://pedago-service.univ-lyon1.fr:2325/tfoussenisalamicisse/asellida
 cd Asellidae_TE_Annotation
 chmod +x config.sh Asellidea_TE_annot.sh run_pipeline.sh
 ./config.sh
+
+cd annotation/pfam_db
+sudo apt update
+sudo apt install hmmer
+hmmpress Pfam-A.hmm
 ```
 Après exécution de ces lignes de commandes vous obtenez la structure suivante.
 
