@@ -109,6 +109,9 @@ wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
 gunzip Pfam-A.hmm.gz
 gunzip Pfam-A.hmm.dat.gz
+sudo apt update
+sudo apt install hmmer
+hmmpress Pfam-A.hmm
 cd ..
 ```
 
